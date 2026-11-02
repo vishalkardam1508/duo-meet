@@ -1,0 +1,10 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "frontend/dist",
+  "rewrites": [
+    { "source": "/m/:code", "destination": "/" },
+    { "source": "/chat", "destination": "/" },
+    { "source": "/chat/:roomId", "destination": "/" },
+    { "source": "/calls", "destination": "/" }
+  ]
+}
