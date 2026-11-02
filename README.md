@@ -1,182 +1,214 @@
-# Duo: group video meetings
+<div align="center">
 
-Create a meeting, share the link (`/m/abc-defg-hij`), and talk face to face. A host
-admits participants from a waiting room. Meetings support up to **25 participants
-including the host**, with display names, initials avatars, and group chat. LiveKit
-provides group media through its SFU; two-person calls use direct WebRTC to avoid
-an unnecessary media-server hop. When a third admitted participant joins, the
-signaling server moves everyone into LiveKit. The Node backend issues signed
-meeting tokens and controls host admission.
+# 🎥 Duo Meet
 
-Local meeting recording requests consent from every other connected participant.
-After everyone approves, the requester can record the participant grid and audio
-and download a WebM file. Recordings are not uploaded or stored by the app server.
+**Free group video meetings: create a link, share it, talk face to face.**
 
-To record, wait until at least one other participant is connected, choose **Request to
-record**, and have them approve the request. Then choose **Start recording**.
-Choose **Stop & download** to save the WebM file locally. All participants see a
-recording notice while recording is active.
+Up to 25 participants · host waiting room · in-call chat · local recording
 
-## Project structure
+![Node](https://img.shields.io/badge/Node-%3E%3D18-339933?logo=node.js&logoColor=white)
+![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)
+![Vite](https://img.shields.io/badge/Vite-6-646CFF?logo=vite&logoColor=white)
+![LiveKit](https://img.shields.io/badge/LiveKit-WebRTC-FF6B35)
+![License](https://img.shields.io/badge/License-MIT-yellow)
 
-```text
-frontend/
-  src/
-    components/ React pages and reusable UI
-    hooks/      Direct WebRTC, LiveKit room, and recording lifecycle
-    lib/        API and meeting helpers
-    App.jsx     App-level routing and media state
-    main.jsx    React entry point
-  index.html    Vite HTML entry
-  vite.config.js
-backend/
-  src/
-    agents/     Report-reading LiveKit voice agent
-    calls/      Outbound phone-call lifecycle
-    meetings/   Meeting room and creation state
-    routes/     HTTP API routes
-    app.js      Express app and middleware
-    config.js   Backend configuration
-    iceServers.js
-  server.js     Node process entry point
-  test/         Backend and admission tests
-```
+<a href="https://buymeacoffee.com/vishalkardam" target="_blank">
+  <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="50">
+</a>
 
-## Run locally
+</div>
 
-Install dependencies:
+---
+
+## ✨ Features
+
+- **Instant meetings:** create a meeting and share a link like `/m/abc-defg-hij`.
+- **Host waiting room:** the host admits or denies each guest before they join.
+- **Up to 25 participants**, including the host.
+- **Smart media routing:** two-person calls go directly between browsers (WebRTC);
+  when a third person is admitted, everyone moves to the LiveKit SFU automatically.
+- **In-call chat:** message everyone in the meeting.
+- **Consent-based recording:** recording starts only after every other participant
+  approves. The participant grid and audio are saved as a local WebM file and are
+  never uploaded to the server.
+- **Host transfer:** hand host controls to another participant.
+- **Tuned audio:** echo cancellation, noise suppression and auto gain are on.
+
+## 🛠 Tech stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | React 18, Vite 6 |
+| Backend | Node.js, Express, WebSocket (`ws`) |
+| Media | WebRTC (1:1), LiveKit Cloud SFU (groups) |
+| Hosting | Render (full app) or Vercel (frontend) + Render (backend) |
+
+## 🚀 Getting started
+
+### Prerequisites
+
+- Node.js 18 or newer
+- A free [LiveKit Cloud](https://livekit.io) project (needed for group calls)
+
+### Run locally
 
 ```bash
+git clone https://github.com/vishalkardam1508/duo-meet.git
+cd duo-meet
 npm install
 ```
 
-Start the app (builds frontend then starts backend):
+Copy `backend/.env.example` to `backend/.env` and fill in your LiveKit values:
+
+```env
+LIVEKIT_URL=wss://your-project.livekit.cloud
+LIVEKIT_API_KEY=your-api-key
+LIVEKIT_API_SECRET=your-api-secret
+```
+
+Start the app (builds the frontend, then starts the server):
 
 ```bash
 npm run dev
 ```
 
-Open `http://localhost:3000`. Every time you change frontend code, re-run `npm run dev` and refresh.
+Open **http://localhost:3000**. After changing frontend code, re-run `npm run dev` and refresh.
 
-Build the frontend and start the backend for production:
+### Scripts
 
-```bash
-npm run build
-npm start
-```
+| Command | What it does |
+|---|---|
+| `npm run dev` | Build the frontend and start the server |
+| `npm run build` | Build the frontend into `frontend/dist` |
+| `npm start` | Start the server (serves the built frontend) |
+| `npm test` | Run backend signaling and admission tests |
 
-## Outbound report calls
+## 📼 Recording a meeting
 
-The landing page can call a privately configured phone number and read a pasted
-report aloud. This requires a LiveKit outbound SIP trunk and a separately running
-report-reading agent. Configure the following backend environment variables (use
-`backend/.env` locally and deployment secrets in production):
+1. Wait until at least one other participant is connected.
+2. Click **Request to record**. Everyone else must approve.
+3. Click **Start recording**. All participants see a recording notice.
+4. Click **Stop & download** to save the WebM file on your computer.
 
-- `REPORT_CALL_ENABLED=true`: explicit opt-in after verifying the destination,
-  caller ID, SIP trunk, and worker configuration.
-- `LIVEKIT_SIP_TRUNK_ID`: outbound trunk ID from LiveKit.
-- `REPORT_CALL_TO` and `REPORT_CALLER_ID`: authorized destination and caller ID
-  in international E.164 format (for example, `+15551234567`).
-- `LIVEKIT_REPORT_AGENT_NAME`: name under which the report-reading agent is
-  registered. It must match the agent worker's name.
-- `REPORT_TTS_MODEL`: optional LiveKit Inference TTS model; defaults to
-  `deepgram/aura-2`.
+## ☁️ Deployment
 
-The agent worker uses the same LiveKit URL and API credentials. For local
-development, `npm run dev:all` starts the worker when all required call settings
-are configured. For production, deploy it as a separate worker process with the
-same environment variables. The phone call route is intentionally unavailable
-until SIP and agent settings are complete. Calls
-require a SIP carrier/trunk that can call the configured number; LiveKit does not
-provide a free cellular/PSTN line. Carrier and speech synthesis may incur
-separate charges. Report text is sent through LiveKit to the voice agent and TTS
-service; avoid submitting sensitive information unless permitted.
+### Option A: Render Blueprint (auto-deploy)
 
-## Deploy to Render (free)
+The repo includes a [`render.yaml`](render.yaml).
 
-1. Push this folder to a GitHub repo.
-2. Render → **New → Web Service** → pick the repo.
-3. Runtime **Node**, Root Directory `.`, Build command `npm install && npm run build`, Start command
-   `npm start`, Plan **Free**.
-4. Add `LIVEKIT_URL`, `LIVEKIT_API_KEY`, and `LIVEKIT_API_SECRET` from your LiveKit
-   project to Render environment variables.
-5. Deploy. Your app is at `https://<name>.onrender.com`.
+1. Push the repo to GitHub.
+2. On Render, choose **New → Blueprint** and select the repo.
+3. Enter `LIVEKIT_URL`, `LIVEKIT_API_KEY` and `LIVEKIT_API_SECRET` when prompted.
+4. Click **Apply**. Every push to `main` now redeploys automatically.
 
-Render gives HTTPS automatically. The server pings its own `/api/status` every
-10 minutes (using Render’s `RENDER_EXTERNAL_URL`), so it doesn’t sleep. For extra
-safety, also add a free UptimeRobot or cron-job.org monitor on
-`https://<name>.onrender.com/api/status`.
+### Option B: Render Web Service (manual)
 
-## Website on Vercel + server on Render
+1. On Render, choose **New → Web Service** and select the repo.
+2. Runtime **Node**, Build command `npm install && npm run build`,
+   Start command `npm start`, Plan **Free**.
+3. Add the three LiveKit environment variables.
+4. Deploy. Your app is live at `https://<name>.onrender.com`.
 
-Vercel builds the React frontend, while Render hosts the API and admission backend.
-Two-person calls use direct WebRTC. When a third admitted person joins, LiveKit
-Cloud carries the group media:
+Render provides HTTPS automatically. The server pings its own `/api/status` every
+10 minutes so the free instance doesn't sleep. For extra safety, add an
+UptimeRobot or cron-job.org monitor on `https://<name>.onrender.com/api/status`.
 
-1. Deploy this repo to **Render** as above. Note its URL, e.g.
-   `https://duo-server.onrender.com`.
-2. On **Vercel**, import the same repo from its root directory. `vercel.json`
-   configures the Vite build and meeting-link rewrites.
-3. In Vercel project settings, add the build environment variable
-   `VITE_SERVER_URL=https://duo-server.onrender.com`.
-4. On Render, set `ALLOWED_ORIGINS=https://your-app.vercel.app` and
-   `PUBLIC_APP_URL=https://your-app.vercel.app`.
+### Option C: Frontend on Vercel + backend on Render
 
-## Environment variables
+1. Deploy the backend to Render as above and note its URL.
+2. Import the same repo into **Vercel** (`vercel.json` handles the build and routes).
+3. In Vercel, add `VITE_SERVER_URL=https://<your-render-app>.onrender.com`.
+4. In Render, set `ALLOWED_ORIGINS` and `PUBLIC_APP_URL` to your Vercel URL.
+
+## ⚙️ Environment variables
 
 | Variable | Purpose |
 |---|---|
-| `LIVEKIT_URL` | LiveKit WebSocket URL, e.g. `wss://your-project.livekit.cloud`. Required for calls. |
-| `LIVEKIT_API_KEY` / `LIVEKIT_API_SECRET` | Server-side LiveKit credentials. Keep secret; never use these as frontend variables. |
-| `ALLOWED_ORIGINS` | Comma-separated origins allowed to use the API. Empty = any origin. |
-| `PUBLIC_APP_URL` | Base URL for meeting links returned by the API (set to your Vercel URL when split). |
-| `LIVEKIT_SIP_TRUNK_ID` | LiveKit outbound SIP trunk required for report phone calls. |
-| `REPORT_CALL_TO` / `REPORT_CALLER_ID` | Privately configured E.164 phone numbers; no destination is accepted from the browser. |
-| `LIVEKIT_REPORT_AGENT_NAME` | Registered LiveKit report-reader agent name. |
-| `REPORT_TTS_MODEL` | Optional LiveKit Inference text-to-speech model (default `deepgram/aura-2`). |
-| `REPORT_CALL_ENABLED` | Must be `true` to enable outbound calls; defaults to disabled. |
-| `KEEPALIVE_URL` | Self-ping URL if not on Render. |
-| `VITE_SERVER_URL` | Frontend build-time backend URL when frontend and backend are deployed separately. |
+| `LIVEKIT_URL` | LiveKit WebSocket URL, e.g. `wss://your-project.livekit.cloud` |
+| `LIVEKIT_API_KEY` / `LIVEKIT_API_SECRET` | Server-side LiveKit credentials. Keep these secret. |
+| `ALLOWED_ORIGINS` | Comma-separated origins allowed to call the API (empty = any) |
+| `PUBLIC_APP_URL` | Base URL used in meeting links (your Vercel URL when split) |
+| `KEEPALIVE_URL` | Self-ping URL when not hosted on Render |
+| `VITE_SERVER_URL` | Backend URL for the frontend build when deployed separately |
 
-## API
+<details>
+<summary><b>Optional: outbound report calls</b></summary>
+
+The landing page can call a privately configured phone number and read a pasted
+report aloud. This needs a LiveKit outbound SIP trunk and a separately running
+report-reading agent with the same LiveKit credentials.
+
+| Variable | Purpose |
+|---|---|
+| `REPORT_CALL_ENABLED` | Must be `true` to enable calls (off by default) |
+| `LIVEKIT_SIP_TRUNK_ID` | LiveKit outbound SIP trunk ID |
+| `REPORT_CALL_TO` / `REPORT_CALLER_ID` | Destination and caller ID in E.164 format, e.g. `+15551234567` |
+| `LIVEKIT_REPORT_AGENT_NAME` | Registered agent name (must match the worker) |
+| `REPORT_TTS_MODEL` | Text-to-speech model (default `deepgram/aura-2`) |
+
+LiveKit does not provide a phone line, so you need a SIP carrier. Carrier and
+text-to-speech usage may cost extra. Avoid sending sensitive reports.
+
+</details>
+
+## 🔌 API
 
 | Route | Description |
 |---|---|
-| `POST /api/meetings` | Creates a meeting and host key (20 per minute per IP) |
-| `POST /api/meetings/:code/host-token` | Creates the host’s signed meeting token for direct and group calls |
-| `POST /api/meetings/:code/join-requests` | Requests host admission |
-| `GET /api/meetings/:code/join-requests` | Lists requests (host key required) |
-| `POST /api/meetings/:code/join-requests/:id/decision` | Admits or denies a guest (host key required) |
-| `GET /api/meetings/:code/join-requests/:id` | Checks request status and returns an admitted participant’s token |
-| `POST /api/meetings/:code/host-transfer` | Transfers host control to an admitted participant |
+| `POST /api/meetings` | Create a meeting and host key (20/min per IP) |
+| `POST /api/meetings/:code/host-token` | Get the host's signed meeting token |
+| `POST /api/meetings/:code/join-requests` | Ask the host to be admitted |
+| `GET /api/meetings/:code/join-requests` | List join requests (host key required) |
+| `POST /api/meetings/:code/join-requests/:id/decision` | Admit or deny a guest (host key required) |
+| `GET /api/meetings/:code/join-requests/:id` | Check request status and get the participant token |
+| `POST /api/meetings/:code/host-transfer` | Transfer host control |
 | `GET /m/:code` | Meeting page |
-| `GET /api/status` | Keep-alive and server status |
+| `GET /api/status` | Health check and keep-alive |
 
-## What’s tuned for smooth audio
+## 📁 Project structure
 
-- Two-person calls send media directly between browsers; the backend only relays
-  authenticated signaling.
-- Three-or-more-person calls use LiveKit SFU subscriptions with adaptive stream,
-  dynacast, and bounded video encoding.
-- Browser echo cancellation, noise suppression, and auto gain are on.
-- Participant limit is 25, including host and direct-call reservations during a
-  transition to group mode.
-- Recording combines the participant grid and available audio into a local WebM file.
+```text
+frontend/
+  src/
+    components/   React pages and UI
+    hooks/        WebRTC, LiveKit and recording logic
+    lib/          API and meeting helpers
+    App.jsx       Routing and media state
+    main.jsx      Entry point
+backend/
+  src/
+    agents/       Report-reading voice agent
+    calls/        Outbound phone calls
+    meetings/     Meeting state
+    routes/       HTTP API routes
+    app.js        Express app
+    config.js     Configuration
+  server.js       Server entry point
+  test/           Backend tests
+render.yaml       Render Blueprint (auto-deploy)
+vercel.json       Vercel config
+```
 
-## Tested
+## ⚠️ Limitations
 
-- Backend tests (`npm test`) cover meeting creation, host-only admission,
-  authenticated direct signaling, the two-to-group transition, participant tokens,
-  and the 25-person limit.
-- Real group calls require valid LiveKit credentials and still need end-to-end
-  testing against a LiveKit project.
+- Meetings, admission requests and chat live in memory, so a server restart clears
+  them, and scaling to multiple instances needs shared storage.
+- Chat isn't saved after the meeting.
+- LiveKit Cloud has free-tier usage limits; heavy group usage may be billed.
+- Group calls need valid LiveKit credentials.
 
-## Limitations
+## 👨‍💻 Creator
 
-- Meeting host keys, admission requests, and chat are not persisted; the backend
-  must use shared storage to scale across multiple instances.
-- Outbound call status and rate limits are held in memory; a backend restart loses
-  their status records. Calls also have a ten-minute maximum duration.
-- LiveKit Cloud has usage quotas and may charge for usage beyond its current free
-  allowances. A 25-participant cap is not a guarantee of free 25-person calls.
-- Chat works only while participants are connected and isn’t saved.
+**Vishal Kardam**, creator and developer of Duo Meet.
+
+- GitHub: [@vishalkardam1508](https://github.com/vishalkardam1508)
+
+If Duo Meet helps you, consider supporting the project:
+
+<a href="https://buymeacoffee.com/vishalkardam" target="_blank">
+  <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="50">
+</a>
+
+## 📄 License
+
+[MIT](https://opensource.org/licenses/MIT) © Vishal Kardam
