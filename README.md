@@ -12,7 +12,7 @@ Up to 25 participants · host waiting room · in-call chat · local recording
 ![LiveKit](https://img.shields.io/badge/LiveKit-WebRTC-FF6B35)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 
-<a href="https://buymeacoffee.com/vishalkardam" target="_blank">
+<a href="https://buymeacoffee.com/vishalkardan1508" target="_blank">
   <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="50">
 </a>
 
@@ -205,7 +205,7 @@ vercel.json       Vercel config
 
 If Duo Meet helps you, consider supporting the project:
 
-<a href="https://buymeacoffee.com/vishalkardam" target="_blank">
+<a href="https://buymeacoffee.com/vishalkardan1508" target="_blank">
   <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="50">
 </a>
 
